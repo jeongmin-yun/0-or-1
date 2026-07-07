@@ -18,6 +18,8 @@ export interface CommunityPost {
 const KEY = "community";
 
 export function getPosts(): CommunityPost[] {
+  if (typeof window === "undefined") return [];
+
   const data = localStorage.getItem(KEY);
 
   if (!data) return [];
@@ -26,14 +28,17 @@ export function getPosts(): CommunityPost[] {
 }
 
 export function savePost(post: CommunityPost) {
-  const list = getPosts();
+  if (typeof window === "undefined") return;
 
+  const list = getPosts();
   list.unshift(post);
 
   localStorage.setItem(KEY, JSON.stringify(list));
 }
 
 export function updatePosts(list: CommunityPost[]) {
+  if (typeof window === "undefined") return;
+
   localStorage.setItem(KEY, JSON.stringify(list));
 }
 
