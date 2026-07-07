@@ -282,6 +282,8 @@ const noCount = results.filter(
 
               user.point += 10000;
 
+              if (typeof window === "undefined") return;
+
               localStorage.setItem(
                 "users",
                 JSON.stringify(users)
@@ -309,6 +311,8 @@ const noCount = results.filter(
                 0,
                 user.point - 10000
               );
+
+              if (typeof window === "undefined") return;
 
               localStorage.setItem(
                 "users",
@@ -350,6 +354,8 @@ const noCount = results.filter(
     const newUsers = users.filter(
       (u) => u.id !== user.id
     );
+
+    if (typeof window === "undefined") return;
 
     localStorage.setItem(
       "users",
