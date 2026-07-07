@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ranking } from "@/lib/ranking";
+import { getRanking } from "@/lib/ranking";
 
 export default function ProfilePage() {
   const params = useParams();
+  const ranking = getRanking();
 
   const user = ranking.find(
     (u) => u.rank === Number(params.id)
