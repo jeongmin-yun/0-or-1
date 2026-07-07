@@ -8,6 +8,8 @@ export interface Notice {
 const KEY = "notice";
 
 export function getNotices(): Notice[] {
+  if (typeof window === "undefined") return [];
+
   const data = localStorage.getItem(KEY);
 
   if (!data) return [];
@@ -16,6 +18,7 @@ export function getNotices(): Notice[] {
 }
 
 export function saveNotice(notice: Notice) {
+  if (typeof window === "undefined") return;
 
   const list = getNotices();
 
@@ -25,10 +28,10 @@ export function saveNotice(notice: Notice) {
     KEY,
     JSON.stringify(list)
   );
-
 }
 
 export function deleteNotice(id: number) {
+  if (typeof window === "undefined") return;
 
   const list = getNotices().filter(
     (n) => n.id !== id
@@ -38,5 +41,4 @@ export function deleteNotice(id: number) {
     KEY,
     JSON.stringify(list)
   );
-
 }

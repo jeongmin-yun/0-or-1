@@ -16,6 +16,8 @@ export interface Prediction {
 const KEY = "predictions";
 
 export function getPredictions(): Prediction[] {
+  if (typeof window === "undefined") return [];
+
   const data = localStorage.getItem(KEY);
 
   if (!data) return [];
@@ -24,6 +26,8 @@ export function getPredictions(): Prediction[] {
 }
 
 export function savePrediction(prediction: Prediction) {
+  if (typeof window === "undefined") return;
+
   const list = getPredictions();
 
   list.push(prediction);
@@ -32,6 +36,8 @@ export function savePrediction(prediction: Prediction) {
 }
 
 export function updatePredictions(list: Prediction[]) {
+  if (typeof window === "undefined") return;
+
   localStorage.setItem(KEY, JSON.stringify(list));
 }
 
@@ -42,13 +48,12 @@ export function settleMatch(
   type: "sports" | "social" | "economy",
   result: string
 ) {
+  if (typeof window === "undefined") return;
 
   const predictions = getPredictions();
-
   const users = getUsers();
 
   predictions.forEach((prediction) => {
-
     if (
       prediction.matchId !== matchId ||
       prediction.type !== type
@@ -63,23 +68,16 @@ export function settleMatch(
     if (!user) return;
 
     if (prediction.choice === result) {
-
       prediction.status = "WIN";
-
       prediction.reward = Math.floor(
         prediction.point * 1.8
       );
 
       user.point += prediction.reward;
-
     } else {
-
       prediction.status = "LOSE";
-
       prediction.reward = 0;
-
     }
-
   });
 
   localStorage.setItem(
@@ -88,5 +86,4 @@ export function settleMatch(
   );
 
   updatePredictions(predictions);
-
 }

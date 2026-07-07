@@ -9,15 +9,22 @@ export interface Comment {
 const KEY = "comments";
 
 export function getComments(): Comment[] {
+  if (typeof window === "undefined") return [];
+
   const data = localStorage.getItem(KEY);
 
   return data ? JSON.parse(data) : [];
 }
 
 export function saveComment(comment: Comment) {
+  if (typeof window === "undefined") return;
+
   const list = getComments();
 
   list.unshift(comment);
 
-  localStorage.setItem(KEY, JSON.stringify(list));
+  localStorage.setItem(
+    KEY,
+    JSON.stringify(list)
+  );
 }

@@ -10,6 +10,8 @@ export interface PredictionHistory {
 const KEY = "prediction-history";
 
 export function getHistory(): PredictionHistory[] {
+  if (typeof window === "undefined") return [];
+
   const data = localStorage.getItem(KEY);
 
   if (!data) return [];
@@ -18,16 +20,21 @@ export function getHistory(): PredictionHistory[] {
 }
 
 export function addHistory(history: PredictionHistory) {
+  if (typeof window === "undefined") return;
+
   const list = getHistory();
 
   list.unshift(history);
 
   localStorage.setItem(KEY, JSON.stringify(list));
 }
+
 export function updateHistory(
   matchId: number,
   result: "WIN" | "LOSE"
 ) {
+  if (typeof window === "undefined") return;
+
   const list = getHistory();
 
   list.forEach((item) => {
