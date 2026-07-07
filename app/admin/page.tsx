@@ -49,7 +49,6 @@ const results =
   typeof window === "undefined"
     ? []
     : JSON.parse(localStorage.getItem("match-result") || "[]");
-);
 
 const yesCount = results.filter(
   (r: any) => r.result === "YES"
