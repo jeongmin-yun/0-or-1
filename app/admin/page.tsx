@@ -40,12 +40,15 @@ export default function AdminPage() {
   const users = getUsers();
   const notices = getNotices();
 
-const predictions = JSON.parse(
-  localStorage.getItem("predictions") || "[]"
-);
+const predictions =
+  typeof window === "undefined"
+    ? []
+    : JSON.parse(localStorage.getItem("predictions") || "[]");
 
-const results = JSON.parse(
-  localStorage.getItem("match-result") || "[]"
+const results =
+  typeof window === "undefined"
+    ? []
+    : JSON.parse(localStorage.getItem("match-result") || "[]");
 );
 
 const yesCount = results.filter(
