@@ -9,11 +9,15 @@ const USERS_KEY = "users";
 const LOGIN_KEY = "loginUser";
 
 export function getUsers(): User[] {
+  if (typeof window === "undefined") return[];
+
   const data = localStorage.getItem(USERS_KEY);
   return data ? JSON.parse(data) : [];
 }
 
 export function signup(user: User) {
+  if (typeof window === "undefined") return false;
+
   const users = getUsers();
 
   const exist = users.find((u) => u.id === user.id);
@@ -30,6 +34,7 @@ export function signup(user: User) {
 }
 
 export function login(id: string, password: string) {
+  if (typeof window === "undefined") return null;
   const users = getUsers();
 
 if (id === "admin" && password === "1234") {
@@ -65,6 +70,7 @@ return user;
 }
 
 export function getLoginUser(): User | null {
+  if (typeof window === "undefined") return null;
   const data = localStorage.getItem(LOGIN_KEY);
 
   return data ? JSON.parse(data) : null;
@@ -73,11 +79,14 @@ export function getLoginUser(): User | null {
 
 
 export function logout() {
+  if (typeof window === "undefined") return;
+
   localStorage.removeItem(LOGIN_KEY);
 }
 
 export function updateUser(user: User) 
 {
+  if (typeof window === "undefined") return;
   const users = getUsers();
 
   const newUsers = users.map((u) =>
@@ -97,6 +106,7 @@ export function updateUser(user: User)
   
 }
 export function refreshLoginUser() {
+  if (typeof window === "undefined") return;
 
   const login = getLoginUser();
 
