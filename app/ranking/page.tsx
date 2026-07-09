@@ -1,12 +1,22 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { getLoginUser } from "@/lib/auth";
 import Link from "next/link";
-import { getRanking } from "@/lib/ranking";
+import { getRanking, RankingUser } from "@/lib/ranking";
 
 export default function RankingPage() {
-  const ranking = getRanking();
+  const [ranking, setRanking] = useState<RankingUser[]>([]);
   const loginUser = getLoginUser();
+
+  useEffect(() => {
+    async function load() {
+      const data = await getRanking();
+      setRanking(data);
+    }
+
+    load();
+  }, []);
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
@@ -24,14 +34,17 @@ export default function RankingPage() {
           🏆 명예의 전당
         </h1>
 
-        <p className="text-slate-400 text-xl mb-12">
-          <p className="text-slate-500 mb-10">
+        <div className="text-slate-400 text-xl mb-12">
 
-  총 참가자 : {ranking.length}명
+  <p className="text-slate-500 mb-3">
+    총 참가자 : {ranking.length}명
+  </p>
 
-</p>
-          예측 정확도와 보유 포인트를 기반으로 실시간 랭킹이 갱신됩니다.
-        </p>
+  <p>
+    예측 정확도와 보유 포인트를 기반으로 실시간 랭킹이 갱신됩니다.
+  </p>
+
+</div>
 
         {ranking.length === 0 ? (
           <div className="bg-slate-900 rounded-3xl border border-slate-800 p-12 text-center">
