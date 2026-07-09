@@ -1,16 +1,27 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { getRanking } from "@/lib/ranking";
 
 export default function ProfilePage() {
   const params = useParams();
-  const ranking = getRanking();
+  const [user, setUser] = useState<any>(null);
 
-  const user = ranking.find(
-    (u) => u.rank === Number(params.id)
-  );
+useEffect(() => {
+  async function load() {
+    const ranking = await getRanking();
+
+    const found = ranking.find(
+      (u) => u.rank === Number(params.id)
+    );
+
+    setUser(found ?? null);
+  }
+
+  load();
+}, [params.id]);
 
   if (!user) {
     return (
@@ -120,7 +131,7 @@ export default function ProfilePage() {
 
           <div className="space-y-4">
 
-            {user.recent.map((item, index) => (
+            {user.recent.map((item: string, index: number) => (
 
               <div
                 key={index}
