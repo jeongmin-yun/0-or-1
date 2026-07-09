@@ -2,23 +2,34 @@
 
 import Link from "next/link";
 import { getLoginUser } from "@/lib/auth";
-import { getPredictions } from "@/lib/prediction";
-import { getHistory } from "@/lib/history";
+import {
+  getPredictions,
+  type Prediction,
+} from "@/lib/prediction";
+import { useEffect, useState } from "react";
 
 export default function MyPage() {
   const user = getLoginUser();
-  const predictions = getPredictions().filter(
-  (item) => item.userId === user?.id
-);
-  const history = getHistory();
+  const [predictions, setPredictions] =
+  useState<Prediction[]>([]);
+
+useEffect(() => {
+  async function loadPredictions() {
+    if (!user) return;
+
+    const list = await getPredictions();
+
+    setPredictions(
+      list.filter((item) => item.userId === user.id)
+    );
+  }
+
+  loadPredictions();
+}, [user]);
   const total = predictions.length;
 
 const win = predictions.filter(
   (p) => p.status === "WIN"
-).length;
-
-const lose = predictions.filter(
-  (p) => p.status === "LOSE"
 ).length;
 
 const wait = predictions.filter(

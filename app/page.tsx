@@ -1,10 +1,15 @@
 "use client";
 
-import { getNotices } from "@/lib/notice";
+import { 
+  getNotices,
+  type Notice, 
+} from "@/lib/notice";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getLoginUser, logout } from "@/lib/auth";
 import { getRanking } from "@/lib/ranking";
+import { getUsers } from "@/lib/auth";
+import { getPredictions } from "@/lib/prediction";
 
 import { matches } from "@/lib/data";
 import { social } from "@/lib/social";
@@ -17,21 +22,32 @@ export default function Home() {
   const [users, setUsers] = useState<any[]>([]);
   const [predictions, setPredictions] = useState<any[]>([]);
   const [results, setResults] = useState<any[]>([]);
+  const [topUsers, setTopUsers] = useState<any[]>([]);
 
 useEffect(() => {
-  setUser(getLoginUser());
+  async function load() {
 
-  setUsers(
-    JSON.parse(localStorage.getItem("users") || "[]")
-  );
+    setUser(getLoginUser());
 
-  setPredictions(
-    JSON.parse(localStorage.getItem("predictions") || "[]")
-  );
+    const userList = await getUsers();
+setUsers(userList);
 
-  setResults(
-    JSON.parse(localStorage.getItem("match-result") || "[]")
-  );
+const predictionList = await getPredictions();
+setPredictions(predictionList);
+
+    setResults(
+      JSON.parse(localStorage.getItem("match-result") || "[]")
+    );
+
+    const ranking = await getRanking();
+    setTopUsers(ranking.slice(0, 5));
+
+    const noticeList = await
+    getNotices();
+    setNotices(noticeList);
+  }
+
+  load();
 }, []);
 
 
@@ -66,9 +82,15 @@ const waitingMatches =
     },
   ];
 
-  const topUsers = getRanking().slice(0, 5);
-  const notices = getNotices();
+  const [notices, setNotices] = useState<Notice[]>([]);
   const [search, setSearch] = useState("");
+  useEffect(() => {
+    async function loadNotices() {
+      const list = await getNotices();
+      setNotices(list);
+    }
+    loadNotices();
+  }, []);
 
 const allPredictions = [
 

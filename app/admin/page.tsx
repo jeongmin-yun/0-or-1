@@ -1,9 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   getNotices,
   saveNotice,
   deleteNotice,
+  type Notice,
 } from "@/lib/notice";
 import { matches } from "@/lib/data";
 import { social } from "@/lib/social";
@@ -14,9 +16,13 @@ import { settleMatch } from "@/lib/prediction";
 import {
   refreshLoginUser,
   getUsers,
+  type User,
 } from "@/lib/auth";
 
 export default function AdminPage() {
+
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
 
   const allMatches = [
     
@@ -37,8 +43,21 @@ export default function AdminPage() {
     })),
 
   ];
-  const users = getUsers();
-  const notices = getNotices();
+  const [users, setUsers] = useState<User[]>([]);
+  const [notices, setNotices] = useState<Notice[]>([]);
+
+useEffect(() => {
+  async function load() {
+    const userlist = await getUsers();
+    setUsers(userlist);
+
+    const noticeList = await
+  getNotices();
+    setNotices(noticeList);
+  }
+
+  load();
+}, []);
 
 const predictions =
   typeof window === "undefined"
@@ -173,7 +192,7 @@ const noCount = results.filter(
 
               <button
 
-                onClick={() => {
+                onClick={async () => {
 
                   saveResult({
 
@@ -185,7 +204,7 @@ const noCount = results.filter(
 
 });
 
-                  settleMatch(match.id, match.type, "YES");
+                  await settleMatch(match.id, match.type, "YES");
 
                   refreshLoginUser();
 
@@ -203,7 +222,7 @@ const noCount = results.filter(
 
               <button
 
-                onClick={() => {
+                onClick={async () => {
 
                   saveResult({
                     matchId: match.id,
@@ -213,7 +232,7 @@ const noCount = results.filter(
                     result: "NO",
                   });
 
-                  settleMatch(match.id, match.type, "NO");
+                  await settleMatch(match.id, match.type, "NO");
 
                   refreshLoginUser();
 
@@ -392,23 +411,49 @@ const noCount = results.filter(
     공지 관리
   </h2>
 
-  <button
-    onClick={() => {
+  
 
-      const title = prompt("공지 제목");
-      if (!title) return;
+    <div className="space-y-3 mb-5">
 
-      const content = prompt("공지 내용");
-      if (!content) return;
+      <input
+        value={title}
+        onChange={(e) =>
+    setTitle(e.target.value)}
+        placeholder="공지 제목"
+        className="w-full border
+    rounded-xl p-3"
+      />
 
-      saveNotice({
-        id: Date.now(),
+      <textarea
+        value={content}
+        onChange={(e) =>
+    setContent(e.target.value)}
+        placeholder="공지 내용"
+        className="w-full border
+    rounded-xl p-3 h-32"
+      />
+    
+    </div>
+
+    <button
+    onClick={async () => {
+
+      if (!title.trim()) return;
+
+      if (!content.trim()) return;
+
+      await saveNotice({
         title,
         content,
-        date: new Date().toLocaleDateString(),
-      });
+        date: new 
+    Date().toLocaleDateString(),
+});
 
-      location.reload();
+const list = await getNotices();
+setNotices(list);
+
+  setTitle("");
+  setContent("");
 
     }}
     className="bg-cyan-500 text-white px-6 py-3 rounded-xl font-bold"
@@ -442,11 +487,12 @@ const noCount = results.filter(
         </div>
 
         <button
-          onClick={() => {
+          onClick={async () => {
 
-            deleteNotice(notice.id);
+            await deleteNotice(notice.id);
 
-            location.reload();
+const list = await getNotices();
+setNotices(list);
 
           }}
           className="bg-red-500 text-white px-4 py-2 rounded-lg"

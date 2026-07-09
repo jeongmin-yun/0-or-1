@@ -1,3 +1,5 @@
+import { supabase } from "./supabase";
+
 export interface Notice {
   id: number;
   title: string;
@@ -5,40 +7,35 @@ export interface Notice {
   date: string;
 }
 
-const KEY = "notice";
+export async function getNotices(): Promise<Notice[]> {
+  const { data } = await supabase
+    .from("notices")
+    .select("*")
+    .order("id", { ascending: false });
 
-export function getNotices(): Notice[] {
-  if (typeof window === "undefined") return [];
-
-  const data = localStorage.getItem(KEY);
-
-  if (!data) return [];
-
-  return JSON.parse(data);
+  return (data ?? []) as Notice[];
 }
 
-export function saveNotice(notice: Notice) {
-  if (typeof window === "undefined") return;
+export async function saveNotice(
+  notice: Omit<Notice, "id">
+) {
+  const { data, error } = await supabase
+    .from("notices")
+    .insert(notice)
+    .select();
 
-  const list = getNotices();
+  if (error) {
+    console.error(error);
+    alert(error.message);
+    return;
+  }
 
-  list.unshift(notice);
-
-  localStorage.setItem(
-    KEY,
-    JSON.stringify(list)
-  );
+  console.log("saveNotice", data, error);
 }
 
-export function deleteNotice(id: number) {
-  if (typeof window === "undefined") return;
-
-  const list = getNotices().filter(
-    (n) => n.id !== id
-  );
-
-  localStorage.setItem(
-    KEY,
-    JSON.stringify(list)
-  );
+export async function deleteNotice(id: number) {
+  await supabase
+    .from("notices")
+    .delete()
+    .eq("id", id);
 }

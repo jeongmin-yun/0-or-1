@@ -13,7 +13,7 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [passwordCheck, setPasswordCheck] = useState("");
 
-  const handleSignup = () => {
+  const handleSignup = async () => {
     if (!id || !nickname || !password || !passwordCheck) {
       alert("모든 항목을 입력해주세요.");
       return;
@@ -24,14 +24,14 @@ export default function SignupPage() {
       return;
     }
 
-    const success = signup({
-      id,
-      nickname,
-      password,
-      point: 100000,
-    });
+    const success = await signup({
+  id,
+  nickname,
+  password,
+  point: 100000,
+});
 
-    if (!success) {
+if (!success) {
       alert("이미 존재하는 아이디입니다.");
       return;
     }

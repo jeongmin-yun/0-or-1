@@ -1,3 +1,4 @@
+import { supabase } from "./supabase";
 export interface User {
   id: string;
   password: string;
@@ -5,68 +6,75 @@ export interface User {
   point: number;
 }
 
-const USERS_KEY = "users";
 const LOGIN_KEY = "loginUser";
 
-export function getUsers(): User[] {
-  if (typeof window === "undefined") return[];
+export async function getUsers() {
 
-  const data = localStorage.getItem(USERS_KEY);
-  return data ? JSON.parse(data) : [];
+  const { data } = await supabase
+    .from("users")
+    .select("*");
+
+  return data ?? [];
 }
 
-export function signup(user: User) {
-  if (typeof window === "undefined") return false;
+export async function signup(user: User) {
 
-  const users = getUsers();
+  const { data: exist } = await supabase
+    .from("users")
+    .select("id")
+    .eq("id", user.id)
+    .single();
 
-  const exist = users.find((u) => u.id === user.id);
+  if (exist) return false;
 
-  if (exist) {
-    return false;
+  const { error } = await supabase
+    .from("users")
+    .insert(user);
+
+  return !error;
+}
+
+export async function login(
+  id: string,
+  password: string
+) {
+
+  if (id === "admin" && password === "1234") {
+
+    const admin = {
+      id: "admin",
+      password: "1234",
+      nickname: "관리자",
+      point: 0,
+    };
+
+    if (typeof window !== "undefined") {
+      localStorage.setItem(
+        LOGIN_KEY,
+        JSON.stringify(admin)
+      );
+    }
+
+    return admin;
   }
 
-  users.push(user);
+  const { data } = await supabase
+    .from("users")
+    .select("*")
+    .eq("id", id)
+    .eq("password", password)
+    .single();
 
-  localStorage.setItem(USERS_KEY, JSON.stringify(users));
+  if (!data) return null;
 
-  return true;
-}
+  if (typeof window !== "undefined") {
+    localStorage.setItem(
+      LOGIN_KEY,
+      JSON.stringify(data)
+    );
+  }
 
-export function login(id: string, password: string) {
-  if (typeof window === "undefined") return null;
-  const users = getUsers();
-
-if (id === "admin" && password === "1234") {
-
-  const admin = {
-    id: "admin",
-    password: "1234",
-    nickname: "관리자",
-    point: 0,
-  };
-
-  localStorage.setItem(
-    LOGIN_KEY,
-    JSON.stringify(admin)
-  );
-
-  return admin;
-
-}
-
-const user = users.find(
-  (u) => u.id === id && u.password === password
-);
-
-if (!user) return null;
-
-localStorage.setItem(
-  LOGIN_KEY,
-  JSON.stringify(user)
-);
-
-return user;
+  return data;
 }
 
 export function getLoginUser(): User | null {
@@ -84,35 +92,33 @@ export function logout() {
   localStorage.removeItem(LOGIN_KEY);
 }
 
-export function updateUser(user: User) 
-{
-  if (typeof window === "undefined") return;
-  const users = getUsers();
+export async function updateUser(user: User) {
 
-  const newUsers = users.map((u) =>
-    u.id === user.id ? user : u
-  );
+  await supabase
+    .from("users")
+    .update({
+      password: user.password,
+      nickname: user.nickname,
+      point: user.point,
+    })
+    .eq("id", user.id);
 
-  localStorage.setItem(
-    USERS_KEY,
-    JSON.stringify(newUsers)
-  );
-
-  localStorage.setItem(
-    LOGIN_KEY,
-    JSON.stringify(user)
-    
-  );
-  
+  if (typeof window !== "undefined") {
+    localStorage.setItem(
+      LOGIN_KEY,
+      JSON.stringify(user)
+    );
+  }
 }
-export function refreshLoginUser() {
+
+export async function refreshLoginUser() {
   if (typeof window === "undefined") return;
 
   const login = getLoginUser();
 
   if (!login) return;
 
-  const users = getUsers();
+  const users = await getUsers();
 
   const latest = users.find(
     (u) => u.id === login.id
@@ -121,7 +127,7 @@ export function refreshLoginUser() {
   if (!latest) return;
 
   localStorage.setItem(
-    "loginUser",
+    LOGIN_KEY,
     JSON.stringify(latest)
   );
 

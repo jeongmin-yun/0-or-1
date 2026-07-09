@@ -11,13 +11,13 @@ export default function LoginPage() {
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!id || !password) {
       alert("아이디와 비밀번호를 입력해주세요.");
       return;
     }
 
-    const user = login(id, password);
+    const user = await login(id, password);
 
     if (!user) {
       alert("아이디 또는 비밀번호가 올바르지 않습니다.");

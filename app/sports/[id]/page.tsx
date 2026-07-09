@@ -12,7 +12,7 @@ import {
 import { matches } from "@/lib/data";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getComments, saveComment } from "@/lib/comment";
 import { savePrediction } from "@/lib/prediction";
 import { getLoginUser, updateUser } from "@/lib/auth";
@@ -32,6 +32,13 @@ export default function MatchDetailPage() {
 const [point, setPoint] = useState(
   loginUser?.point ?? 0
 );
+
+useEffect(() => {
+  const user = getLoginUser();
+  if (user) {
+    setPoint(user.point);
+  }
+}, []);
 const [comment, setComment] = useState("");
 
 const [comments, setComments] = useState(
@@ -59,7 +66,7 @@ const [comments, setComments] = useState(
 
   }
 
-  const handlePrediction = () => {
+  const handlePrediction = async () => {
 
   const loginUser = getLoginUser();
 
@@ -94,9 +101,9 @@ const [comments, setComments] = useState(
 
   loginUser.point -= amount;
 
-  updateUser(loginUser);
+  await updateUser(loginUser);
 
-  savePrediction({
+await savePrediction({
     id: Date.now(),
     userId: loginUser.id,
     matchId: match.id,

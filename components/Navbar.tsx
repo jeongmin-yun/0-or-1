@@ -8,8 +8,13 @@ export default function Navbar() {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    setUser(getLoginUser());
-  }, []);
+  async function loadUser() {
+    const loginUser = await getLoginUser();
+    setUser(loginUser);
+  }
+
+  loadUser();
+}, []);
 
   const handleLogout = () => {
     logout();

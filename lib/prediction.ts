@@ -1,3 +1,6 @@
+import { supabase } from "./supabase";
+import { getUsers, updateUser } from "./auth";
+
 export interface Prediction {
   id: number;
   userId: string;
@@ -13,45 +16,82 @@ export interface Prediction {
   date: string;
 }
 
-const KEY = "predictions";
+type PredictionRow = {
+  id: number;
+  user_id: string;
+  match_id: number;
+  type: "sports" | "social" | "economy";
+  title: string;
+  choice: string;
+  point: number;
+  reward: number;
+  status: "WAIT" | "WIN" | "LOSE";
+  date: string;
+};
 
-export function getPredictions(): Prediction[] {
-  if (typeof window === "undefined") return [];
-
-  const data = localStorage.getItem(KEY);
-
-  if (!data) return [];
-
-  return JSON.parse(data);
+function toRow(prediction: Prediction): PredictionRow {
+  return {
+    id: prediction.id,
+    user_id: prediction.userId,
+    match_id: prediction.matchId,
+    type: prediction.type,
+    title: prediction.title,
+    choice: prediction.choice,
+    point: prediction.point,
+    reward: prediction.reward,
+    status: prediction.status,
+    date: prediction.date,
+  };
 }
 
-export function savePrediction(prediction: Prediction) {
-  if (typeof window === "undefined") return;
-
-  const list = getPredictions();
-
-  list.push(prediction);
-
-  localStorage.setItem(KEY, JSON.stringify(list));
+function fromRow(row: PredictionRow): Prediction {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    matchId: row.match_id,
+    type: row.type,
+    title: row.title,
+    choice: row.choice,
+    point: row.point,
+    reward: row.reward,
+    status: row.status,
+    date: row.date,
+  };
 }
 
-export function updatePredictions(list: Prediction[]) {
-  if (typeof window === "undefined") return;
+export async function getPredictions(): Promise<Prediction[]> {
+  const { data } = await supabase
+    .from("predictions")
+    .select("*");
 
-  localStorage.setItem(KEY, JSON.stringify(list));
+  return (data ?? []).map((row) => fromRow(row as PredictionRow));
 }
 
-import { getUsers } from "./auth";
+export async function savePrediction(prediction: Prediction) {
+  await supabase.from("predictions").insert(toRow(prediction));
+}
 
-export function settleMatch(
+export async function updatePredictions(list: Prediction[]) {
+  if (list.length === 0) return;
+
+  await supabase
+    .from("predictions")
+    .upsert(
+      list.map(toRow),
+      { onConflict: "id" }
+    );
+}
+
+export async function settleMatch(
   matchId: number,
   type: "sports" | "social" | "economy",
   result: string
 ) {
   if (typeof window === "undefined") return;
 
-  const predictions = getPredictions();
-  const users = getUsers();
+  const predictions = await getPredictions();
+  const users = await getUsers();
+  const modifiedUserIds = new Set<string>();
 
   predictions.forEach((prediction) => {
     if (
@@ -74,16 +114,18 @@ export function settleMatch(
       );
 
       user.point += prediction.reward;
+      modifiedUserIds.add(user.id);
     } else {
       prediction.status = "LOSE";
       prediction.reward = 0;
     }
   });
 
-  localStorage.setItem(
-    "users",
-    JSON.stringify(users)
-  );
+  for (const user of users) {
+    if (modifiedUserIds.has(user.id)) {
+      await updateUser(user);
+    }
+  }
 
-  updatePredictions(predictions);
+  await updatePredictions(predictions);
 }

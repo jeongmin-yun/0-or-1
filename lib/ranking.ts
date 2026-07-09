@@ -4,16 +4,15 @@ export interface RankingUser {
   rank: number;
   nickname: string;
   point: number;
-
   winRate: number;
   profit: number;
   totalPrediction: number;
   recent: string[];
 }
 
-export function getRanking(): RankingUser[] {
+export async function getRanking(): Promise<RankingUser[]> {
 
-  const users = getUsers();
+  const users = await getUsers();
 
   return users
     .sort((a, b) => b.point - a.point)
@@ -31,10 +30,9 @@ export function getRanking(): RankingUser[] {
         "삼성전자 상승 예측 성공",
         "LG 트윈스 승리 적중",
         "비트코인 상승 예측",
-        "토트넘 승리 적중",
+        "맨체스터시티 승리 적중",
         "금 가격 상승 예측"
       ]
 
     }));
-
 }
