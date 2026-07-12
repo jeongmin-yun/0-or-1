@@ -15,7 +15,7 @@ export const portfolio = [
 },
 
 {
-    title:"비트코인 2억원",
+    title:"비트코인 1.5억원",
     side:"NO",
     point:15000,
     status:"대기"

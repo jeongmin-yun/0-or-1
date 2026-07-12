@@ -185,7 +185,7 @@ export const matches = [
 
     type: "binary",
 
-    title: "T1 MSI 우승?",
+    title: "한화생명e스포츠 MSI 우승?",
 
     league: "LCK",
 
@@ -200,9 +200,9 @@ export const matches = [
     description: "MSI 2026",
 
     player: {
-      name: "Faker",
-      team: "T1",
-      position: "MID",
+      name: "Zeus",
+      team: "한화생명e스포츠",
+      position: "TOP",
       marketValue: "-",
       goals: 0,
       assists: 0,
@@ -228,8 +228,8 @@ export const matches = [
       ],
 
       news: [
-        "T1 MSI 우승 후보 1순위",
-        "Faker 최근 MVP 선정",
+        "한화생명e스포츠 MSI 우승 후보 1순위",
+        "Zeus 최근 MVP 선정",
       ],
 
       sentiment: {

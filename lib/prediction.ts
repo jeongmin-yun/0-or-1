@@ -68,7 +68,22 @@ export async function getPredictions(): Promise<Prediction[]> {
 }
 
 export async function savePrediction(prediction: Prediction) {
-  await supabase.from("predictions").insert(toRow(prediction));
+  const { data } = await supabase
+    .from("predictions")
+    .select("id")
+    .eq("user_id", prediction.userId)
+    .eq("match_id", prediction.matchId)
+    .eq("type", prediction.type)
+    .maybeSingle();
+
+  if (data) {
+    alert("이미 이 경기에 베팅했습니다.");
+    return;
+  }
+
+  await supabase
+    .from("predictions")
+    .insert(toRow(prediction));
 }
 
 export async function updatePredictions(list: Prediction[]) {

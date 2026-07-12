@@ -1,7 +1,7 @@
 export const social = [
   {
     id: 1,
-    title: "내년도 최저임금 11,000원 이상으로 결정될까?",
+    title: "내년도 최저임금 10800원 이상으로 결정될까?",
     description: "최저임금위원회 최종 결정 기준",
     yes: 58,
     no: 42,

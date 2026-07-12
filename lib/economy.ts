@@ -16,7 +16,7 @@ export const economy = [
 
   {
     id: 2,
-    title: "비트코인 2억원 돌파?",
+    title: "비트코인 1.5억원 돌파?",
     description: "2026년 예상",
     yes: 74,
     no: 26,
@@ -46,7 +46,7 @@ export const economy = [
 
   {
     id: 4,
-    title: "코스피 연말 3,500선 돌파?",
+    title: "코스피 연말 10000선 돌파?",
     description: "2026년 연말 종가 기준",
     yes: 52,
     no: 48,
@@ -61,7 +61,7 @@ export const economy = [
 
   {
     id: 5,
-    title: "원/달러 환율 1,300원 이하로 하락?",
+    title: "올해 원/달러 환율 1,600원 이상로 상승?",
     description: "2026년 말 기준",
     yes: 47,
     no: 53,

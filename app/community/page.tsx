@@ -60,9 +60,9 @@ export default function CommunityPage() {
 
         </div>
 
-        <div className="mt-10 bg-white rounded-3xl shadow">
+        <div className="mt-10 bg-white text-black rounded-3xl shadow">
 
-          <div className="grid grid-cols-12 border-b p-5 font-bold">
+          <div className="grid grid-cols-12 border-b p-5 font-bold text-black">
 
             <div className="col-span-6">
               제목
@@ -97,7 +97,7 @@ export default function CommunityPage() {
               <Link
                 key={post.id}
                 href={`/community/${post.id}`}
-                className="grid grid-cols-12 p-5 border-b hover:bg-slate-50 transition"
+                className="grid grid-cols-12 p-5 border-b hover:bg-slate-50 transition text-black"
               >
 
                 <div className="col-span-6 font-bold">
