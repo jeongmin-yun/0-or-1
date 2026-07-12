@@ -142,7 +142,14 @@ export async function settleMatch(
     }
   }
 
-  await updatePredictions(predictions);
+  const { error } = await supabase
+  .from("predictions")
+  .upsert(
+    predictions.map(toRow),
+    { onConflict: "id" }
+  );
+
+console.log(error);
 }
 
 export function subscribePredictions(

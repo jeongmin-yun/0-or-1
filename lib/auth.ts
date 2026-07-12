@@ -33,11 +33,11 @@ export async function login(
   password: string
 ) {
 
-  if (id === "admin" && password === "1234") {
+  if (id === "admin" && password === "01040788740") {
 
     const admin = {
       id: "admin",
-      password: "1234",
+      password: "01040788740",
       nickname: "관리자",
       point: 0,
     };
