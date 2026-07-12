@@ -66,14 +66,3 @@ export async function deleteComment(id: number) {
     console.log(error);
   }
 }
-export async function deleteComment(id: number) {
-  const { error } = await supabase
-    .from("comments")
-    .delete()
-    .eq("id", id);
-
-  if (error) {
-    alert("댓글 삭제 실패");
-    console.log(error);
-  }
-}
