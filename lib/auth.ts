@@ -18,20 +18,14 @@ export async function getUsers() {
 }
 
 export async function signup(user: User) {
-
-  const { data: exist } = await supabase
+  const result = await supabase
     .from("users")
-    .select("id")
-    .eq("id", user.id)
-    .single();
+    .insert([user])
+    .select();
 
-  if (exist) return false;
+  console.log(result);
 
-  const { error } = await supabase
-    .from("users")
-    .insert(user);
-
-  return !error;
+  return !result.error;
 }
 
 export async function login(
@@ -131,4 +125,62 @@ export async function refreshLoginUser() {
     JSON.stringify(latest)
   );
 
+}
+
+export async function addPoint(id: string, point: number) {
+  const { data } = await supabase
+    .from("users")
+    .select("point")
+    .eq("id", id)
+    .single();
+
+  if (!data) return;
+
+  await supabase
+    .from("users")
+    .update({
+      point: data.point + point,
+    })
+    .eq("id", id);
+}
+
+export async function subtractPoint(id: string, point: number) {
+  const { data } = await supabase
+    .from("users")
+    .select("point")
+    .eq("id", id)
+    .single();
+
+  if (!data) return;
+
+  await supabase
+    .from("users")
+    .update({
+      point: Math.max(0, data.point - point),
+    })
+    .eq("id", id);
+}
+
+export async function deleteUser(id: string) {
+  await supabase
+    .from("users")
+    .delete()
+    .eq("id", id);
+}
+
+export function subscribeUsers(
+  callback: () => void
+) {
+  return supabase
+    .channel("users-channel")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "users",
+      },
+      callback
+    )
+    .subscribe();
 }

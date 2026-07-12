@@ -1,34 +1,40 @@
 "use client";
 
+import TopNavigation from "@/components/TopNavigation";
 import { useEffect, useState } from "react";
 import { getLoginUser } from "@/lib/auth";
 import Link from "next/link";
-import { getRanking, RankingUser } from "@/lib/ranking";
+import {
+  getRanking,
+  subscribeRanking,
+  RankingUser,
+} from "@/lib/ranking";
 
 export default function RankingPage() {
   const [ranking, setRanking] = useState<RankingUser[]>([]);
   const loginUser = getLoginUser();
 
   useEffect(() => {
-    async function load() {
-      const data = await getRanking();
-      setRanking(data);
-    }
+  async function load() {
+    const data = await getRanking();
+    setRanking(data);
+  }
 
-    load();
-  }, []);
+  load();
+
+  const channel = subscribeRanking(load);
+
+  return () => {
+    channel.unsubscribe();
+  };
+}, []);
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
 
-      <div className="max-w-6xl mx-auto px-8 py-12">
+      <TopNavigation />
 
-        <Link
-          href="/"
-          className="text-cyan-400 font-bold hover:text-cyan-300"
-        >
-          ← 홈으로
-        </Link>
+      <section className="max-w-7xl mx-auto px-8 py-16">
 
         <h1 className="text-6xl font-black mt-8 mb-3">
           🏆 명예의 전당
@@ -133,7 +139,7 @@ export default function RankingPage() {
           </div>
         )}
 
-      </div>
+      </section>
 
     </main>
   );

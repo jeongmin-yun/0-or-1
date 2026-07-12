@@ -1,17 +1,41 @@
 "use client";
 
+import TopNavigation from "@/components/TopNavigation";
 import Link from "next/link";
-import { getPosts } from "@/lib/community";
+import { useEffect, useState } from "react";
+
+import {
+  getPosts,
+  subscribePosts,
+  type CommunityPost,
+} from "@/lib/community";
 
 export default function CommunityPage() {
 
-  const posts = getPosts();
+  const [posts, setPosts] = useState<CommunityPost[]>([]);
+
+  useEffect(() => {
+  async function load() {
+    const list = await getPosts();
+    setPosts(list);
+  }
+
+  load();
+
+  const channel = subscribePosts(load);
+
+  return () => {
+    channel.unsubscribe();
+  };
+}, []);
 
   return (
 
-    <main className="min-h-screen bg-slate-100">
+    <main className="min-h-screen bg-slate-950 text-white">
 
-      <div className="max-w-6xl mx-auto px-8 py-12">
+      <TopNavigation />
+
+      <section className="max-w-7xl mx-auto px-8 py-16">
 
         <div className="flex justify-between items-center">
 
@@ -108,7 +132,7 @@ export default function CommunityPage() {
 
         </div>
 
-      </div>
+      </section>
 
     </main>
 

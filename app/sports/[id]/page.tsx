@@ -1,5 +1,6 @@
 "use client";
 
+import TopNavigation from "@/components/TopNavigation";
 import TradePanel from "../../../components/TradePanel";
 import {
   ResponsiveContainer,
@@ -13,8 +14,17 @@ import { matches } from "@/lib/data";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
-import { getComments, saveComment } from "@/lib/comment";
-import { savePrediction } from "@/lib/prediction";
+import { 
+  getComments,
+  saveComment,
+  subscribeComments,
+  type Comment,
+} from "@/lib/comment";
+import { 
+  savePrediction,
+  getPredictions,
+  subscribePredictions,
+} from "@/lib/prediction";
 import { getLoginUser, updateUser } from "@/lib/auth";
 
 export default function MatchDetailPage() {
@@ -28,25 +38,85 @@ export default function MatchDetailPage() {
   const [amount, setAmount] = useState(10000);
   const [selected, setSelected] = useState("");
   const loginUser = getLoginUser();
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [comment, setComment] = useState("");
 
 const [point, setPoint] = useState(
   loginUser?.point ?? 0
 );
+const [yesPercent, setYesPercent] = useState(match?.yes ?? 50);
+const [noPercent, setNoPercent] = useState(match?.no ?? 50);
+const [people, setPeople] = useState(match?.people ?? 0);
 
 useEffect(() => {
-  const user = getLoginUser();
-  if (user) {
-    setPoint(user.point);
+  async function load() {
+    const list = await getComments();
+
+    setComments(
+      list.filter((item) => item.matchId === Number(params.id))
+    );
   }
-}, []);
-const [comment, setComment] = useState("");
 
-const [comments, setComments] = useState(
-  getComments().filter(
-    (c) => c.matchId === Number(params.id)
-  )
-);
+  load();
 
+  const channel = subscribeComments(() => {
+  console.log("Realtime event");
+  load();
+});
+
+  return () => {
+    channel.unsubscribe();
+  };
+}, [params.id]);
+
+async function loadPredictions() {
+  if (!match) return;
+
+  const list = await getPredictions();
+
+  const current = list.filter(
+    (item) =>
+      item.matchId === match.id &&
+      item.type === "sports"
+  );
+
+  const yes = current.filter(
+    (item) => item.choice === "YES"
+  ).length;
+
+  const no = current.filter(
+    (item) => item.choice === "NO"
+  ).length;
+
+  const total = current.length;
+
+  setPeople(total);
+
+  if (total === 0) {
+    setYesPercent(50);
+    setNoPercent(50);
+    return;
+  }
+
+  setYesPercent(
+    Math.round((yes / total) * 100)
+  );
+
+  setNoPercent(
+    Math.round((no / total) * 100)
+  );
+}
+useEffect(() => {
+  loadPredictions();
+
+  const channel = subscribePredictions(() => {
+    loadPredictions();
+  });
+
+  return () => {
+    channel.unsubscribe();
+  };
+}, [match]);
 
   if (!match) {
 
@@ -116,6 +186,8 @@ await savePrediction({
     date: new Date().toLocaleString(),
   });
 
+  await loadPredictions();
+
   alert("예측 참여가 완료되었습니다.");
 };
 
@@ -129,7 +201,9 @@ await savePrediction({
 
     <main className="min-h-screen bg-slate-950 text-white">
 
-      <div className="max-w-7xl mx-auto px-8 py-14">
+<TopNavigation />
+
+<section className="max-w-7xl mx-auto px-8 py-16">
 
         <div className="flex justify-between items-center mb-8">
 
@@ -206,7 +280,7 @@ await savePrediction({
     </p>
 
     <h3 className="text-3xl font-black">
-      {match.people.toLocaleString()}
+      {people.toLocaleString()}
     </h3>
 
   </div>
@@ -270,12 +344,12 @@ await savePrediction({
 
           {match.yes && (
   <p className="text-xs text-slate-500 mt-2">
-    {Math.round(match.people * match.yes / 100).toLocaleString()}명이 선택
+    {Math.round(people * yesPercent / 100).toLocaleString()}명이 선택
   </p>
 )}
 
           <h2 className="text-4xl font-black">
-            {match.yes}%
+            {yesPercent}%
           </h2>
 
         </div>
@@ -291,7 +365,7 @@ await savePrediction({
         <div
   className="h-3 rounded-full bg-green-400 transition-all duration-700"
           style={{
-            width: `${match.yes}%`,
+            width: `${yesPercent}%`,
           }}
         />
 
@@ -328,11 +402,11 @@ await savePrediction({
 
           {match.no && (
   <p className="text-xs text-slate-500 mt-2">
-    {Math.round(match.people * match.no / 100).toLocaleString()}명이 선택
+    {Math.round(people * noPercent / 100).toLocaleString()}명이 선택
   </p>
 )}
           <h2 className="text-4xl font-black">
-            {match.no}%
+            {noPercent}%
           </h2>
 
         </div>
@@ -348,7 +422,7 @@ await savePrediction({
         <div
           className="h-3 rounded-full bg-red-400 transition-all duration-700"
           style={{
-            width: `${match.no}%`,
+            width: `${noPercent}%`,
           }}
         />
 
@@ -501,7 +575,7 @@ await savePrediction({
       </p>
 
       <h3 className="text-3xl font-black">
-        {match.people.toLocaleString()}
+        {people.toLocaleString()}
       </h3>
 
     </div>
@@ -568,7 +642,7 @@ outline-none
 
           <button
 
-onClick={() => {
+onClick={async() => {
 
 const loginUser = getLoginUser();
 
@@ -588,28 +662,20 @@ return;
 
 }
 
-saveComment({
-
-id:Date.now(),
-
-matchId:match.id,
-
-nickname:loginUser.nickname,
-
-content:comment,
-
-date:new Date().toLocaleString()
-
+await saveComment({
+  id: Date.now(),
+  matchId: match.id,
+  nickname: loginUser.nickname,
+  content: comment,
+  date: new Date().toISOString(),
 });
 
+const list = await getComments();
+
 setComments(
-
-  getComments().filter(
-
-(c)=>c.matchId===Number(params.id)
-
-)
-
+  list.filter(
+    (c) => c.matchId === Number(params.id)
+  )
 );
 
 setComment("");
@@ -847,7 +913,7 @@ AI는 현재 확률이
 
         {/* COMMENT */}
 
-      </div>
+      </section>
 
     </main>
 

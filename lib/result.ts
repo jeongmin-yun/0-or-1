@@ -1,46 +1,71 @@
+import { supabase } from "./supabase";
+
 export interface Result {
   matchId: number;
   type: "sports" | "social" | "economy";
   result: "YES" | "NO";
 }
 
-const KEY = "match-result";
+type ResultRow = {
+  match_id: number;
+  type: "sports" | "social" | "economy";
+  result: "YES" | "NO";
+};
 
-export function getResults(): Result[] {
-
-  const data = localStorage.getItem(KEY);
-
-  if (!data) return [];
-
-  return JSON.parse(data);
-
+function toRow(result: Result): ResultRow {
+  return {
+    match_id: result.matchId,
+    type: result.type,
+    result: result.result,
+  };
 }
 
-export function saveResult(result: Result) {
+function fromRow(row: ResultRow): Result {
+  return {
+    matchId: row.match_id,
+    type: row.type,
+    result: row.result,
+  };
+}
 
-  const list = getResults();
+export async function getResults(): Promise<Result[]> {
+  const { data, error } = await supabase
+    .from("match_results")
+    .select("*");
 
-  const exist = list.find(
-
-    (item) =>
-      item.matchId === result.matchId &&
-      item.type === result.type
-
-  );
-
-  if (exist) {
-
-    exist.result = result.result;
-
-  } else {
-
-    list.push(result);
-
+  if (error) {
+    console.error(error);
+    return [];
   }
 
-  localStorage.setItem(
-    KEY,
-    JSON.stringify(list)
-  );
+  return (data ?? []).map((row) => fromRow(row as ResultRow));
+}
 
+export async function saveResult(result: Result) {
+  const { error } = await supabase
+    .from("match_results")
+    .upsert(toRow(result), {
+      onConflict: "match_id,type",
+    });
+
+  if (error) {
+    console.error(error);
+  }
+}
+
+export function subscribeResults(
+  callback: () => void
+) {
+  return supabase
+    .channel("results-channel")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "match_results",
+      },
+      callback
+    )
+    .subscribe();
 }

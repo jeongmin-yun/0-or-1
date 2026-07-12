@@ -1,4 +1,8 @@
-import { getUsers } from "./auth";
+import {
+  getUsers,
+} from "./auth";
+
+import { supabase } from "./supabase";
 
 export interface RankingUser {
   rank: number;
@@ -35,4 +39,20 @@ export async function getRanking(): Promise<RankingUser[]> {
       ]
 
     }));
+}
+export function subscribeRanking(
+  callback: () => void
+) {
+  return supabase
+    .channel("ranking-channel")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "users",
+      },
+      callback
+    )
+    .subscribe();
 }

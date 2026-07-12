@@ -39,3 +39,19 @@ export async function deleteNotice(id: number) {
     .delete()
     .eq("id", id);
 }
+export function subscribeNotices(
+  callback: () => void
+) {
+  return supabase
+    .channel("notices-channel")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "notices",
+      },
+      callback
+    )
+    .subscribe();
+}

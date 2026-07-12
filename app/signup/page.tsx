@@ -31,6 +31,8 @@ export default function SignupPage() {
   point: 100000,
 });
 
+console.log("signup success =", success);
+
 if (!success) {
       alert("이미 존재하는 아이디입니다.");
       return;

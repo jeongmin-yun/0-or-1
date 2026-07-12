@@ -1,28 +1,45 @@
 "use client";
 
+import TopNavigation from "@/components/TopNavigation";
 import { useEffect, useState } from "react";
 import {
   getNotices,
   saveNotice,
   deleteNotice,
+  subscribeNotices,
   type Notice,
 } from "@/lib/notice";
 import { matches } from "@/lib/data";
 import { social } from "@/lib/social";
 import { economy } from "@/lib/economy";
 
-import { saveResult } from "@/lib/result";
-import { settleMatch } from "@/lib/prediction";
+import { 
+  saveResult,
+getResults,
+subscribeResults,
+} from "@/lib/result";
+import {
+  settleMatch,
+  getPredictions,
+  subscribePredictions,
+} from "@/lib/prediction";
 import {
   refreshLoginUser,
   getUsers,
   type User,
+  addPoint,
+  subtractPoint,
+  deleteUser,
 } from "@/lib/auth";
+import { saveMatch } from "@/lib/match"; 
 
 export default function AdminPage() {
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [matchTitle, setMatchTitle] = useState("");
+  const [matchDesc, setMatchDesc] = useState("");
+  const [matchCategory, setMatchCategory] = useState("축구");
 
   const allMatches = [
     
@@ -45,29 +62,38 @@ export default function AdminPage() {
   ];
   const [users, setUsers] = useState<User[]>([]);
   const [notices, setNotices] = useState<Notice[]>([]);
+  const [results, setResults] = useState<any[]>([]);
+  const [predictions, setPredictions] = useState<any[]>([]);
 
 useEffect(() => {
   async function load() {
     const userlist = await getUsers();
     setUsers(userlist);
 
-    const noticeList = await
-  getNotices();
+    const noticeList = await getNotices();
     setNotices(noticeList);
+
+    const resultList = await getResults();
+    setResults(resultList);
+
+    const predictionList = await getPredictions();
+    setPredictions(predictionList);
   }
 
   load();
+
+  const resultChannel = subscribeResults(load);
+  const predictionChannel =
+  subscribePredictions(load);
+  const noticeChannel =
+  subscribeNotices(load);
+
+  return () => {
+  resultChannel.unsubscribe();
+  predictionChannel.unsubscribe();
+  noticeChannel.unsubscribe();
+};
 }, []);
-
-const predictions =
-  typeof window === "undefined"
-    ? []
-    : JSON.parse(localStorage.getItem("predictions") || "[]");
-
-const results =
-  typeof window === "undefined"
-    ? []
-    : JSON.parse(localStorage.getItem("match-result") || "[]");
 
 const yesCount = results.filter(
   (r: any) => r.result === "YES"
@@ -79,13 +105,75 @@ const noCount = results.filter(
 
   return (
 
-    <main className="min-h-screen bg-slate-100 p-10">
+  <main className="min-h-screen bg-slate-100 p-10">
 
-      <h1 className="text-5xl font-black mb-10">
+    <TopNavigation />
 
-        관리자
+    <h1 className="text-5xl font-black mb-10">
 
-      </h1>
+      관리자
+
+    </h1>
+
+      <div className="bg-white rounded-3xl shadow p-6 mb-10">
+
+  <h2 className="text-3xl font-black mb-5">
+    경기 추가
+  </h2>
+
+  <input
+    className="border rounded-xl p-3 w-full mb-3"
+    placeholder="제목"
+    value={matchTitle}
+    onChange={(e)=>setMatchTitle(e.target.value)}
+  />
+
+  <input
+    className="border rounded-xl p-3 w-full mb-3"
+    placeholder="설명"
+    value={matchDesc}
+    onChange={(e)=>setMatchDesc(e.target.value)}
+  />
+
+  <select
+    className="border rounded-xl p-3 w-full mb-5"
+    value={matchCategory}
+    onChange={(e)=>setMatchCategory(e.target.value)}
+  >
+    <option>축구</option>
+    <option>야구</option>
+    <option>e스포츠</option>
+    <option>사회</option>
+    <option>경제</option>
+  </select>
+
+  <button
+    className="bg-cyan-500 text-white px-6 py-3 rounded-xl"
+    onClick={async()=>{
+
+      await saveMatch({
+        id: Date.now(),
+        title: matchTitle,
+        description: matchDesc,
+        type: matchCategory,
+        people: 0,
+        yes: 50,
+        no: 50,
+        probability: 50,
+        confidence: 50,
+      });
+
+      alert("등록 완료");
+
+      setMatchTitle("");
+      setMatchDesc("");
+
+    }}
+  >
+    경기 등록
+  </button>
+
+</div>
 
       <div className="grid md:grid-cols-3 lg:grid-cols-6 gap-5 mb-10">
 
@@ -297,21 +385,14 @@ const noCount = results.filter(
 
           <button
 
-            onClick={() => {
+            onClick={async () => {
 
-              user.point += 10000;
+              await addPoint(user.id, 10000);
 
-              if (typeof window === "undefined") return;
-
-              localStorage.setItem(
-                "users",
-                JSON.stringify(users)
-              );
+              const userList = await getUsers();
+              setUsers(userList);
 
               refreshLoginUser();
-
-              location.reload();
-
             }}
 
             className="bg-green-500 text-white px-3 py-2 rounded-lg"
@@ -324,24 +405,14 @@ const noCount = results.filter(
 
           <button
 
-            onClick={() => {
+            onClick={async () => {
 
-              user.point = Math.max(
-                0,
-                user.point - 10000
-              );
+              await subtractPoint(user.id, 10000);
 
-              if (typeof window === "undefined") return;
-
-              localStorage.setItem(
-                "users",
-                JSON.stringify(users)
-              );
+              const userList = await getUsers();
+              setUsers(userList);
 
               refreshLoginUser();
-
-              location.reload();
-
             }}
 
             className="bg-red-500 text-white px-3 py-2 rounded-lg"
@@ -354,36 +425,21 @@ const noCount = results.filter(
 
           <button
 
-  onClick={() => {
+  onClick={async () => {
 
     if (user.id === "admin") {
-
       alert("관리자 계정은 삭제할 수 없습니다.");
-
       return;
-
     }
 
     if (!confirm(`${user.nickname} 회원을 삭제하시겠습니까?`)) {
-
       return;
-
     }
 
-    const newUsers = users.filter(
-      (u) => u.id !== user.id
-    );
+    await deleteUser(user.id);
 
-    if (typeof window === "undefined") return;
-
-    localStorage.setItem(
-      "users",
-      JSON.stringify(newUsers)
-    );
-
-    refreshLoginUser();
-
-    location.reload();
+    const userList = await getUsers();
+    setUsers(userList);
 
   }}
 

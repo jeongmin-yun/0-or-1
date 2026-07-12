@@ -1,3 +1,5 @@
+import { supabase } from "./supabase";
+
 export interface Comment {
   id: number;
   matchId: number;
@@ -6,25 +8,50 @@ export interface Comment {
   date: string;
 }
 
-const KEY = "comments";
+export async function getComments(): Promise<Comment[]> {
+  const { data } = await supabase
+    .from("comments")
+    .select("*")
+    .order("id", { ascending: false });
 
-export function getComments(): Comment[] {
-  if (typeof window === "undefined") return [];
-
-  const data = localStorage.getItem(KEY);
-
-  return data ? JSON.parse(data) : [];
+  return (data ?? []).map((item: any) => ({
+    id: item.id,
+    matchId: item.matchid,
+    nickname: item.nickname,
+    content: item.content,
+    date: item.date,
+  }));
 }
 
-export function saveComment(comment: Comment) {
-  if (typeof window === "undefined") return;
+export async function saveComment(comment: Comment) {
+  const { error } = await supabase
+    .from("comments")
+    .insert({
+      id: comment.id,
+      matchid: comment.matchId,
+      nickname: comment.nickname,
+      content: comment.content,
+      date: comment.date,
+    });
 
-  const list = getComments();
-
-  list.unshift(comment);
-
-  localStorage.setItem(
-    KEY,
-    JSON.stringify(list)
-  );
+  if (error) {
+    alert(JSON.stringify(error));
+    console.log(error);
+  }
+}
+export function subscribeComments(
+  callback: () => void
+) {
+  return supabase
+    .channel("comments-channel")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "comments",
+      },
+      callback
+    )
+    .subscribe();
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import TopNavigation from "@/components/TopNavigation";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -58,7 +59,7 @@ export default function CommunityWritePage() {
           className="text-cyan-500 font-bold"
         >
 
-          ← 게시판
+          <TopNavigation />
 
         </Link>
 
@@ -96,7 +97,7 @@ export default function CommunityWritePage() {
 
           <button
 
-            onClick={() => {
+            onClick={async () => {
 
               if (!title.trim()) {
 
@@ -114,27 +115,18 @@ export default function CommunityWritePage() {
 
               }
 
-              savePost({
-
+              await savePost({
   id: Date.now(),
-
   title,
-
   content,
-
   writer: user.nickname,
-
   date: new Date().toLocaleDateString(),
-
   views: 0,
-
-  comments: [],
-
 });
 
-              alert("게시글이 등록되었습니다.");
+alert("게시글이 등록되었습니다.");
 
-              router.push("/community");
+router.push("/community");
 
             }}
 

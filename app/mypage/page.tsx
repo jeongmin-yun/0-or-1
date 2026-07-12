@@ -1,5 +1,10 @@
 "use client";
 
+import TopNavigation from "@/components/TopNavigation";
+import {
+  refreshLoginUser,
+  subscribeUsers,
+} from "@/lib/auth";
 import Link from "next/link";
 import { getLoginUser } from "@/lib/auth";
 import {
@@ -10,8 +15,29 @@ import { useEffect, useState } from "react";
 
 export default function MyPage() {
   const user = getLoginUser();
+  const [point, setPoint] = useState(user?.point ?? 0);
   const [predictions, setPredictions] =
   useState<Prediction[]>([]);
+
+useEffect(() => {
+  async function refresh() {
+    await refreshLoginUser();
+
+    const user = getLoginUser();
+
+    if (user) {
+      setPoint(user.point);
+    }
+  }
+
+  refresh();
+
+  const channel = subscribeUsers(refresh);
+
+  return () => {
+    channel.unsubscribe();
+  };
+}, []);
 
 useEffect(() => {
   async function loadPredictions() {
@@ -40,6 +66,23 @@ const winRate =
   total === 0
     ? 0
     : Math.round((win / total) * 100);
+    let rank = "Rookie";
+
+    if (total >= 10) rank = "Bronze"
+    if (total >= 30) rank = "Silver"
+    if (total >= 60) rank = "Gold"
+    if (total >= 100) rank = "Diamond"
+
+    let next = 10;
+
+    if (total >= 10) next = 30;
+    if (total >= 30) next = 60;
+    if (total >= 60) next = 100;
+
+    const progress =
+    total >= 100
+    ? 100
+    : Math.round((total / next) * 100);
 
   if (!user) {
     return (
@@ -61,7 +104,9 @@ const winRate =
   return (
     <main className="min-h-screen bg-slate-100">
 
-      <div className="max-w-5xl mx-auto py-14 px-8">
+      <section className="max-w-7xl mx-auto px-8 py-16">
+
+        <TopNavigation />
 
         <h1 className="text-5xl font-black mb-10">
           마이페이지
@@ -129,19 +174,57 @@ const winRate =
               </p>
 
               <h2 className="text-4xl font-black text-yellow-500">
-                {user.point.toLocaleString()}P
+                {point.toLocaleString()}P
               </h2>
             </div>
 
             <div>
-              <p className="text-slate-500 mb-2">
-                등급
-              </p>
+  <p className="text-slate-500 mb-2">
+    등급
+  </p>
 
-              <h2 className="text-3xl font-black">
-                Rookie
-              </h2>
-            </div>
+  <h2
+  className={
+    "text-3xl font-black " +
+    (rank === "Diamond"
+      ? "text-cyan-500"
+      : rank === "Gold"
+      ? "text-yellow-500"
+      : rank === "Silver"
+      ? "text-gray-500"
+      : rank === "Bronze"
+      ? "text-orange-500"
+      : "text-green-500")
+  }
+>
+  {rank}
+</h2>
+</div>
+
+<div className="mt-4">
+
+  <div className="flex justify-between text-sm mb-2">
+
+    <span>레벨 진행률</span>
+
+    <span>{progress}%</span>
+
+  </div>
+
+  <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden">
+
+    <div
+      className="bg-cyan-500 h-full"
+      style={{
+        width: `${progress}%`,
+      }}
+    />
+
+  </div>
+
+</div>
+
+            
 
           </div>
 
@@ -256,7 +339,7 @@ const winRate =
 
 </div>
 
-      </div>
+      </section>
 
     </main>
   );

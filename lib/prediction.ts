@@ -129,3 +129,20 @@ export async function settleMatch(
 
   await updatePredictions(predictions);
 }
+
+export function subscribePredictions(
+  callback: () => void
+) {
+  return supabase
+    .channel("predictions-channel")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "predictions",
+      },
+      callback
+    )
+    .subscribe();
+}

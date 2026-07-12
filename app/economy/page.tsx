@@ -1,75 +1,32 @@
 "use client";
 
+import TopNavigation from "@/components/TopNavigation";
 import Link from "next/link";
 import { economy } from "@/lib/economy";
 
 export default function EconomyPage() {
   return (
-    <main className="min-h-screen bg-slate-950 text-white">
+   <main className="min-h-screen bg-slate-950 text-white">
 
-      {/* HEADER */}
+  <TopNavigation />
 
-      <header className="border-b border-slate-800">
+  <section className="max-w-7xl mx-auto px-8 py-16">
 
-        <div className="max-w-7xl mx-auto h-20 flex items-center justify-between px-8">
+        <div className="mb-14">
 
-          <Link
-            href="/"
-            className="text-4xl font-black text-cyan-400"
-          >
-            0 or 1
-          </Link>
+  <h1 className="text-7xl font-black text-cyan-400">
+    PICKS
+  </h1>
 
-          <div className="flex gap-8 font-semibold">
+  <h2 className="mt-4 text-6xl font-black">
+    📈 경제
+  </h2>
 
-            <Link href="/">홈</Link>
+  <p className="text-slate-400 text-xl mt-3">
+    경제 이슈를 예측하고 가상 포인트를 투자하세요.
+  </p>
 
-            <Link href="/sports">
-              스포츠
-            </Link>
-
-            <Link href="/social">
-              사회
-            </Link>
-
-            <Link
-              href="/economy"
-              className="text-cyan-400"
-            >
-              경제
-            </Link>
-
-            <Link href="/ranking">
-              랭킹
-            </Link>
-
-          </div>
-
-          <button className="bg-cyan-500 hover:bg-cyan-400 px-5 py-2 rounded-xl font-bold transition">
-
-            로그인
-
-          </button>
-
-        </div>
-
-      </header>
-
-      {/* CONTENT */}
-
-      <section className="max-w-7xl mx-auto px-8 py-16">
-
-        <h1 className="text-6xl font-black mb-4">
-
-          📈 경제
-
-        </h1>
-
-        <p className="text-slate-400 text-xl mb-14">
-
-          경제 이슈를 예측하고 가상 포인트를 투자하세요.
-
-        </p>
+</div>
 
         <div className="grid lg:grid-cols-2 gap-8">
 

@@ -1,5 +1,6 @@
 "use client";
 
+import TopNavigation from "@/components/TopNavigation";
 import Link from "next/link";
 import { matches } from "@/lib/data";
 
@@ -8,48 +9,27 @@ export default function SportsPage() {
     <main className="min-h-screen bg-slate-950 text-white">
       {/* HEADER */}
 
-      <header className="border-b border-slate-800">
-        <div className="max-w-7xl mx-auto h-20 flex items-center justify-between px-8">
-          <Link
-            href="/"
-            className="text-4xl font-black text-cyan-400"
-          >
-            0 or 1
-          </Link>
-
-          <div className="flex gap-8 font-semibold">
-            <Link href="/">홈</Link>
-
-            <Link
-              href="/sports"
-              className="text-cyan-400"
-            >
-              스포츠
-            </Link>
-
-            <Link href="/social">사회</Link>
-
-            <Link href="/economy">경제</Link>
-
-            <Link href="/ranking">랭킹</Link>
-          </div>
-
-          <button className="bg-cyan-500 hover:bg-cyan-400 px-5 py-2 rounded-xl font-bold transition">
-            로그인
-          </button>
-        </div>
-      </header>
+      
+      <TopNavigation />
 
       {/* CONTENT */}
 
       <section className="max-w-7xl mx-auto px-8 py-16">
-        <h1 className="text-6xl font-black mb-4">
-          ⚽ 스포츠
-        </h1>
+        <div className="mb-14">
 
-        <p className="text-slate-400 text-xl mb-14">
-          원하는 종목을 선택하여 가상 포인트를 투자하세요.
-        </p>
+  <h1 className="text-7xl font-black text-cyan-400">
+    PICKS
+  </h1>
+
+  <h2 className="mt-4 text-6xl font-black">
+    ⚽ 스포츠
+  </h2>
+
+  <p className="text-slate-400 text-xl mt-3">
+    원하는 종목을 선택하여 가상 포인트를 투자하세요.
+  </p>
+
+</div>
 
         <div className="grid lg:grid-cols-2 gap-8">
           {matches.map((match) => (

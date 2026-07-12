@@ -4,7 +4,7 @@ import { social } from "@/lib/social";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
-import { getComments, saveComment } from "@/lib/comment";
+import { getComments, saveComment, type Comment } from "@/lib/comment";
 import { savePrediction } from "@/lib/prediction";
 import { getLoginUser, updateUser } from "@/lib/auth";
 
@@ -32,13 +32,23 @@ useEffect(() => {
   }
 }, []);
 
+useEffect(() => {
+  async function loadComments() {
+    const list = await getComments();
+
+    setComments(
+      list.filter(
+        (c) => c.matchId === Number(params.id)
+      )
+    );
+  }
+
+  loadComments();
+}, [params.id]);
+
 const [comment, setComment] = useState("");
 
-const [comments, setComments] = useState(
-  getComments().filter(
-    (c) => c.matchId === Number(params.id)
-  )
-);
+const [comments, setComments] = useState<any[]>([]);
 
 
   if (!match) {
@@ -515,7 +525,7 @@ await savePrediction({
 
           <button
 
-onClick={() => {
+onClick={async () => {
 
 const loginUser = getLoginUser();
 
@@ -535,7 +545,7 @@ return;
 
 }
 
-saveComment({
+await saveComment({
 
 id:Date.now(),
 
@@ -549,14 +559,12 @@ date:new Date().toLocaleString()
 
 });
 
+const list = await getComments();
+
 setComments(
-
-  getComments().filter(
-
-(c)=>c.matchId===Number(params.id)
-
-)
-
+  list.filter(
+    (c) => c.matchId === Number(params.id)
+  )
 );
 
 setComment("");

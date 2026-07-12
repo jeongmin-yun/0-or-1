@@ -1,5 +1,6 @@
 "use client";
 
+import TopNavigation from "@/components/TopNavigation";
 import Link from "next/link";
 import { social } from "@/lib/social";
 
@@ -7,22 +8,28 @@ export default function SocialPage() {
   return (
     <main className="min-h-screen bg-slate-950 text-white">
 
-      <section className="max-w-7xl mx-auto px-8 py-16">
+  <TopNavigation />
 
-        <Link
-          href="/"
-          className="text-cyan-400 font-bold"
-        >
-          ← 홈으로
-        </Link>
+  <section className="max-w-7xl mx-auto px-8 py-16">
 
-        <h1 className="text-6xl font-black mt-8 mb-4">
-          📰 사회
-        </h1>
+       <div className="flex items-center gap-8 mb-8">
 
-        <p className="text-slate-400 text-xl mb-14">
-          사회 · 정치 · 기후 등 다양한 이슈를 예측해보세요.
-        </p>
+  <Link
+    href="/"
+    className="text-6xl font-black text-cyan-400 hover:text-cyan-300 transition"
+  >
+    PICKS
+  </Link>
+
+</div>
+
+<h1 className="text-7xl font-black mb-4">
+  📰 사회
+</h1>
+
+<p className="text-slate-400 text-xl mb-14">
+  사회 · 정치 · 기후 등 다양한 이슈를 예측해보세요.
+</p>
 
         <div className="grid lg:grid-cols-2 gap-8">
 

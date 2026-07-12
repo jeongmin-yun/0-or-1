@@ -15,14 +15,17 @@ import { matches } from "@/lib/data";
 import { social } from "@/lib/social";
 import { economy } from "@/lib/economy";
 
-
 export default function Home() {
+  const [mounted, setMounted] = useState(false);
   const [user, setUser] = useState<any>(null);
-
   const [users, setUsers] = useState<any[]>([]);
   const [predictions, setPredictions] = useState<any[]>([]);
   const [results, setResults] = useState<any[]>([]);
   const [topUsers, setTopUsers] = useState<any[]>([]);
+
+useEffect(() => {
+  setMounted(true);
+}, []);
 
 useEffect(() => {
   async function load() {
@@ -119,6 +122,7 @@ const hotPredictions = [...allPredictions]
 const filteredPredictions = allPredictions.filter((item) =>
   item.title.toLowerCase().includes(search.toLowerCase())
 );
+if (!mounted) return null;
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
@@ -135,9 +139,9 @@ const filteredPredictions = allPredictions.filter((item) =>
 
           <Link
             href="/"
-            className="text-4xl font-black text-cyan-400"
+            className="text-6xl font-black text-cyan-400 tracking-tight"
           >
-            0 or 1
+            PICKS
           </Link>
 
           <nav className="flex gap-8 text-sm font-semibold">
@@ -252,15 +256,23 @@ const filteredPredictions = allPredictions.filter((item) =>
 
             <h1 className="text-7xl font-black leading-tight mb-8">
 
-              Predict.
+              People's
 
               <br />
 
-              Invest.
+              Insight
 
               <br />
 
-              Compete.
+              Collective
+
+              <br />
+
+              Knowledge
+
+              <br />
+
+              Service
 
             </h1>
 
@@ -765,7 +777,7 @@ const filteredPredictions = allPredictions.filter((item) =>
 
             <h2 className="text-3xl font-black text-cyan-400 mb-3">
 
-              0 or 1
+              PICKS
 
             </h2>
 
@@ -783,7 +795,7 @@ const filteredPredictions = allPredictions.filter((item) =>
 
           <div className="text-slate-500 leading-8">
 
-            © 2026 0 or 1
+            © 2026 PICKS
 
             <br />
 

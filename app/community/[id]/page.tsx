@@ -1,11 +1,20 @@
 "use client";
 
+import TopNavigation from "@/components/TopNavigation";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { getLoginUser } from "@/lib/auth";
-import { getPost, getPosts, updatePosts } from "@/lib/community";
+import {
+  getPost,
+  getComments,
+  saveComment,
+  subscribeComments,
+  updatePost,
+  type CommunityPost,
+  type CommunityComment,
+} from "@/lib/community";
 
 export default function CommunityDetailPage() {
 
@@ -17,9 +26,29 @@ export default function CommunityDetailPage() {
 
   const id = Number(params.id);
 
-  const posts = getPosts();
+  const [post, setPost] = useState<CommunityPost | null>(null);
+  const [comments, setComments] = useState<CommunityComment[]>([]);
 
-  const post = posts.find((p) => p.id === id);
+  useEffect(() => {
+  async function load() {
+    const p = await getPost(id);
+
+    if (!p) return;
+
+    setPost(p);
+
+    const list = await getComments(id);
+    setComments(list);
+  }
+
+  load();
+
+  const channel = subscribeComments(load);
+
+  return () => {
+    channel.unsubscribe();
+  };
+}, [id]);
 
   if (!post) {
 
@@ -35,28 +64,35 @@ export default function CommunityDetailPage() {
 
   }
 
-  if (!sessionStorage.getItem(`view-${id}`)) {
+  useEffect(() => {
+  async function increaseView() {
+    if (!post) return;
 
-    post.views++;
+    if (sessionStorage.getItem(`view-${id}`)) return;
 
-    updatePosts(posts);
+    await updatePost({
+      ...post,
+      views: post.views + 1,
+    });
+
+    setPost({
+      ...post,
+      views: post.views + 1,
+    });
 
     sessionStorage.setItem(`view-${id}`, "1");
-
   }
+
+  increaseView();
+}, [post, id]);
 
   return (
 
     <main className="min-h-screen bg-slate-100">
 
-      <div className="max-w-5xl mx-auto py-12 px-8">
+      <TopNavigation />
 
-        <Link
-          href="/community"
-          className="text-cyan-500 font-bold"
-        >
-          ← 게시판
-        </Link>
+      <div className="max-w-5xl mx-auto py-12 px-8">
 
         <div className="bg-white rounded-3xl shadow p-10 mt-8">
 
@@ -124,7 +160,7 @@ export default function CommunityDetailPage() {
 
               <button
 
-                onClick={()=>{
+                onClick={async ()=>{
 
                   if(comment.trim()===""){
 
@@ -134,21 +170,19 @@ export default function CommunityDetailPage() {
 
                   }
 
-                  post.comments.push({
+                  await saveComment({
+  id: Date.now(),
+  post_id: id,
+  writer: user.nickname,
+  content: comment,
+  date: new Date().toLocaleString(),
+});
 
-                    id:Date.now(),
+const list = await getComments(id);
 
-                    writer:user.nickname,
+setComments(list);
 
-                    content:comment,
-
-                    date:new Date().toLocaleString()
-
-                  });
-
-                  updatePosts(posts);
-
-                  location.reload();
+setComment("");
 
                 }}
 
@@ -166,7 +200,7 @@ export default function CommunityDetailPage() {
 
           <div className="space-y-5 mt-8">
 
-            {post.comments.length===0? (
+            {comments.length===0? (
 
               <p className="text-slate-500">
 
@@ -176,7 +210,7 @@ export default function CommunityDetailPage() {
 
             ):(
 
-              post.comments.map((c)=>(
+              comments.map((c)=>(
 
                 <div
 
