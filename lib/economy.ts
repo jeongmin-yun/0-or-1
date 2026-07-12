@@ -1,7 +1,7 @@
 export const economy = [
   {
     id: 1,
-    title: "삼성전자 연말 10만원 돌파?",
+    title: "삼성전자 연말 40만원 돌파?",
     description: "2026년 말 기준",
     yes: 61,
     no: 39,

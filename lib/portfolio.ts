@@ -8,7 +8,7 @@ export const portfolio = [
 },
 
 {
-    title:"삼성전자 10만원",
+    title:"삼성전자 40만원",
     side:"YES",
     point:20000,
     status:"진행중"

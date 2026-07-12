@@ -14,10 +14,11 @@ import { matches } from "@/lib/data";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
-import { 
+import {
   getComments,
   saveComment,
   subscribeComments,
+  deleteComment,
   type Comment,
 } from "@/lib/comment";
 import { 
@@ -747,6 +748,34 @@ shadow-lg
 {c.content}
 
 </p>
+{loginUser?.id === "admin" && (
+
+<button
+  onClick={async () => {
+
+    if (!confirm("댓글을 삭제하시겠습니까?"))
+      return;
+
+    await deleteComment(c.id);
+
+    const list = await getComments();
+
+    setComments(
+      list.filter(
+        (item) =>
+          item.matchId === Number(params.id)
+      )
+    );
+
+  }}
+  className="mt-4 text-red-400 hover:text-red-300 font-bold"
+>
+
+삭제
+
+</button>
+
+)}
 
 </div>
 
